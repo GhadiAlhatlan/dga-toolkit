@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- Served via GitHub Pages -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -140,6 +139,8 @@
     background: var(--surface-0);
     border-radius: 10px;
     padding: 1rem 1.25rem;
+  }
+  .gate-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -148,12 +149,13 @@
   .gate-label {
     font-size: 13px;
     color: var(--text-secondary);
-    margin: 0 0 4px;
+    margin: 0;
+    font-weight: 600;
   }
   .gate-detail {
     font-size: 12px;
     color: var(--text-muted);
-    margin: 0;
+    margin: 8px 0 0;
   }
   .gate-badge {
     font-size: 13px;
@@ -221,7 +223,7 @@
       <p class="each" id="rem-each">1.76% each</p>
     </div>
     <div class="stat accent">
-      <p class="label">Estimated score</p>
+      <p class="label">Estimated Compliance Score</p>
       <p class="value" id="total-score">75.3%</p>
     </div>
   </div>
@@ -240,11 +242,11 @@
   </div>
 
   <div class="gate-card" id="gate-card">
-    <div>
-      <p class="gate-label">Remaining criteria floor</p>
-      <p class="gate-detail" id="gate-detail">Needs at least 21 of 34 applicable remaining criteria passed</p>
+    <div class="gate-header">
+      <p class="gate-label">High Adoption Eligibility</p>
+      <span class="gate-badge" id="gate-badge">✅ Eligible</span>
     </div>
-    <span class="gate-badge" id="gate-badge">Met</span>
+    <p class="gate-detail" id="gate-detail" style="display: none;"></p>
   </div>
 </div>
 
@@ -294,14 +296,24 @@
     remMaxOut.textContent = remApplicable;
 
     const mWeightEach = mandApplicable > 0 ? 40 / mandApplicable : 0;
-    const rWeightEach = remApplicable > 0 ? 60 / remApplicable : 0;
-
     const mContribution = mVal * mWeightEach;
-    const rContribution = rVal * rWeightEach;
+
+    const stage1Count = Math.min(21, remApplicable);
+    const stage2Count = Math.max(0, remApplicable - 21);
+    const weight1 = stage1Count > 0 ? 30 / stage1Count : 0;
+    const weight2 = stage2Count > 0 ? 30 / stage2Count : 0;
+
+    let rContribution;
+    if (rVal <= stage1Count) {
+      rContribution = rVal * weight1;
+    } else {
+      rContribution = stage1Count * weight1 + (rVal - stage1Count) * weight2;
+    }
+
     const total = mContribution + rContribution;
 
     mandEach.textContent = mWeightEach.toFixed(2) + '% each';
-    remEach.textContent = rWeightEach.toFixed(2) + '% each';
+    remEach.textContent = weight1.toFixed(2) + '% (1–21)' + (stage2Count > 0 ? ', ' + weight2.toFixed(2) + '% (22+)' : '');
     mandScore.textContent = mContribution.toFixed(1) + '%';
     remScore.textContent = rContribution.toFixed(1) + '%';
     totalScore.textContent = total.toFixed(1) + '%';
@@ -317,11 +329,28 @@
       statusLine.textContent = Math.abs(diff) + ' points below the 70% target.';
     }
 
-    const remThreshold = Math.min(21, remApplicable);
-    const gateMet = rVal >= remThreshold;
-    gateDetail.textContent = 'Needs at least ' + remThreshold + ' of ' + remApplicable + ' applicable remaining criteria passed';
-    gateBadge.textContent = gateMet ? 'Met' : 'Not met';
-    gateBadge.className = 'gate-badge ' + (gateMet ? 'met' : 'not-met');
+    const mandFailed = mandApplicable - mVal;
+    let eligible, reason;
+    if (mandFailed > 0) {
+      eligible = false;
+      reason = 'One or more Mandatory Criteria were not met.';
+    } else if (rVal >= 21) {
+      eligible = true;
+      reason = '';
+    } else {
+      eligible = false;
+      reason = 'At least 21 Remaining Criteria must be achieved.';
+    }
+
+    gateBadge.textContent = eligible ? '✅ Eligible' : '❌ Not Eligible';
+    gateBadge.className = 'gate-badge ' + (eligible ? 'met' : 'not-met');
+    if (reason) {
+      gateDetail.textContent = 'Reason: ' + reason;
+      gateDetail.style.display = 'block';
+    } else {
+      gateDetail.textContent = '';
+      gateDetail.style.display = 'none';
+    }
   }
 
   [mandNA, mand, remNA, rem].forEach(el => el.addEventListener('input', update));

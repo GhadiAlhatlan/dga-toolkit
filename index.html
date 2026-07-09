@@ -64,113 +64,128 @@
     width: 100%;
     accent-color: #333;
   }
-  .stats {
+  .results {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin: 1.5rem 0;
+    margin: 1.75rem 0;
   }
-  .stat {
-    background: var(--surface-0);
-    border-radius: 10px;
-    padding: 1rem;
+  .result-card {
+    border-radius: 14px;
+    padding: 1.5rem 1.25rem;
   }
-  .stat.accent {
+  .result-card.score {
     background: var(--accent-bg);
   }
-  .stat p.label {
+  .result-card .result-label {
     font-size: 13px;
-    color: var(--text-secondary);
-    margin: 0 0 4px;
-  }
-  .stat.accent p.label {
-    color: var(--accent-text);
-  }
-  .stat p.value {
-    font-size: 24px;
     font-weight: 600;
-    margin: 0;
+    margin: 0 0 8px;
   }
-  .stat.accent p.value {
+  .result-card.score .result-label {
     color: var(--accent-text);
   }
-  .stat p.each {
-    font-size: 11px;
+  .result-card.score .result-value {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--accent-text);
+    margin: 0;
+    line-height: 1.1;
+  }
+  .result-card.eligibility {
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+  }
+  .result-card.eligibility .result-label {
+    color: var(--text-secondary);
+  }
+  .result-badge {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 6px 0;
+  }
+  .result-badge.met {
+    color: #085041;
+  }
+  .result-badge.not-met {
+    color: #791f1f;
+  }
+  .result-reason {
+    font-size: 12px;
     color: var(--text-muted);
-    margin: 4px 0 0;
+    margin: 8px 0 0;
+  }
+  .score-bar-wrap {
+    margin-top: 1rem;
   }
   .bar-labels {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
     margin-bottom: 6px;
   }
   .bar-track {
     position: relative;
-    height: 14px;
-    background: var(--surface-0);
-    border-radius: 7px;
+    height: 10px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 5px;
   }
   .bar-fill {
     position: absolute;
     left: 0;
     top: 0;
     height: 100%;
-    border-radius: 7px;
+    border-radius: 5px;
     background: var(--green);
     transition: width 0.15s ease, background 0.15s ease;
   }
   .bar-target {
     position: absolute;
     left: 70%;
-    top: -4px;
+    top: -3px;
     width: 2px;
-    height: 22px;
+    height: 16px;
     background: var(--text-muted);
   }
   .status-line {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin: 10px 0 0;
+    font-size: 11px;
+    color: var(--accent-text);
+    margin: 8px 0 0;
+    opacity: 0.8;
   }
-  .gate-card {
-    margin-top: 1.5rem;
-    background: var(--surface-0);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
+  .breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
   }
-  .gate-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
+  .breakdown-item {
+    padding: 0.5rem 0.25rem;
   }
-  .gate-label {
-    font-size: 13px;
+  .breakdown-item p.label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin: 0 0 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .breakdown-item p.value {
+    font-size: 15px;
+    font-weight: 600;
     color: var(--text-secondary);
     margin: 0;
-    font-weight: 600;
   }
-  .gate-detail {
-    font-size: 12px;
+  .breakdown-item p.each {
+    font-size: 10px;
     color: var(--text-muted);
-    margin: 8px 0 0;
+    margin: 2px 0 0;
   }
-  .gate-badge {
-    font-size: 13px;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 999px;
-    white-space: nowrap;
-  }
-  .gate-badge.met {
-    background: #e1f5ee;
-    color: #085041;
-  }
-  .gate-badge.not-met {
-    background: #fcebeb;
-    color: #791f1f;
+  @media (max-width: 480px) {
+    .results { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -211,42 +226,42 @@
     <input type="range" min="0" max="33" step="1" value="0" id="rem-na" />
   </div>
 
-  <div class="stats">
-    <div class="stat">
-      <p class="label">Mandatory contribution</p>
+  <div class="breakdown">
+    <div class="breakdown-item">
+      <p class="label">Mandatory</p>
       <p class="value" id="mand-score">40.0%</p>
       <p class="each" id="mand-each">5.00% each</p>
     </div>
-    <div class="stat">
-      <p class="label">Remaining contribution</p>
+    <div class="breakdown-item">
+      <p class="label">Remaining</p>
       <p class="value" id="rem-score">35.3%</p>
       <p class="each" id="rem-each">1.76% each</p>
     </div>
-    <div class="stat accent">
-      <p class="label">Estimated Compliance Score</p>
-      <p class="value" id="total-score">75.3%</p>
-    </div>
   </div>
 
-  <div>
-    <div class="bar-labels">
-      <span>0%</span>
-      <span>70% target</span>
-      <span>100%</span>
+  <div class="results">
+    <div class="result-card score">
+      <p class="result-label">Estimated Compliance Score</p>
+      <p class="result-value" id="total-score">75.3%</p>
+      <div class="score-bar-wrap">
+        <div class="bar-labels">
+          <span>0%</span>
+          <span>70% target</span>
+          <span>100%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" id="bar-fill" style="width: 75.3%;"></div>
+          <div class="bar-target"></div>
+        </div>
+        <p class="status-line" id="status-line">Above the 70% target by 5.3 points.</p>
+      </div>
     </div>
-    <div class="bar-track">
-      <div class="bar-fill" id="bar-fill" style="width: 75.3%;"></div>
-      <div class="bar-target"></div>
-    </div>
-    <p class="status-line" id="status-line">Above the 70% target by 5.3 points.</p>
-  </div>
 
-  <div class="gate-card" id="gate-card">
-    <div class="gate-header">
-      <p class="gate-label">High Adoption Eligibility</p>
-      <span class="gate-badge" id="gate-badge">✅ Eligible</span>
+    <div class="result-card eligibility">
+      <p class="result-label">High Adoption Eligibility</p>
+      <span class="result-badge" id="gate-badge">✅ Eligible</span>
+      <p class="result-reason" id="gate-detail" style="display: none;"></p>
     </div>
-    <p class="gate-detail" id="gate-detail" style="display: none;"></p>
   </div>
 </div>
 
@@ -343,7 +358,7 @@
     }
 
     gateBadge.textContent = eligible ? '✅ Eligible' : '❌ Not Eligible';
-    gateBadge.className = 'gate-badge ' + (eligible ? 'met' : 'not-met');
+    gateBadge.className = 'result-badge ' + (eligible ? 'met' : 'not-met');
     if (reason) {
       gateDetail.textContent = 'Reason: ' + reason;
       gateDetail.style.display = 'block';

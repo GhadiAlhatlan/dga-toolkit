@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DGA estimated compliance score calculator</title>
+<style>
+  :root {
+    --surface-0: #f5f5f4;
+    --surface-1: #ffffff;
+    --border: #e2e2df;
+    --text-primary: #1a1a18;
+    --text-secondary: #57564f;
+    --text-muted: #8a8983;
+    --accent-bg: #e6f1fb;
+    --accent-text: #0c447c;
+    --green: #1d9e75;
+    --coral: #d85a30;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem 1rem;
+    background: var(--surface-0);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 640px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 1.5rem;
+  }
+  .control {
+    background: var(--surface-0);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .control-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .control-header label {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .control-header span {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  input[type="range"] {
+    width: 100%;
+    accent-color: #333;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 1.5rem 0;
+  }
+  .stat {
+    background: var(--surface-0);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+  .stat.accent {
+    background: var(--accent-bg);
+  }
+  .stat p.label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 4px;
+  }
+  .stat.accent p.label {
+    color: var(--accent-text);
+  }
+  .stat p.value {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .stat.accent p.value {
+    color: var(--accent-text);
+  }
+  .stat p.each {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin: 4px 0 0;
+  }
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .bar-track {
+    position: relative;
+    height: 14px;
+    background: var(--surface-0);
+    border-radius: 7px;
+  }
+  .bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 7px;
+    background: var(--green);
+    transition: width 0.15s ease, background 0.15s ease;
+  }
+  .bar-target {
+    position: absolute;
+    left: 70%;
+    top: -4px;
+    width: 2px;
+    height: 22px;
+    background: var(--text-muted);
+  }
+  .status-line {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 10px 0 0;
+  }
+  .gate-card {
+    margin-top: 1.5rem;
+    background: var(--surface-0);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .gate-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 4px;
+  }
+  .gate-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .gate-badge {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .gate-badge.met {
+    background: #e1f5ee;
+    color: #085041;
+  }
+  .gate-badge.not-met {
+    background: #fcebeb;
+    color: #791f1f;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>DGA estimated compliance score calculator</h1>
+
+  <div class="control">
+    <div class="control-header">
+      <label>Mandatory criteria passed</label>
+      <span><span id="mand-out">8</span> / <span id="mand-max-out">8</span> applicable</span>
+    </div>
+    <input type="range" min="0" max="8" step="1" value="8" id="mand" />
+  </div>
+
+  <div class="control">
+    <div class="control-header">
+      <label>Remaining criteria passed</label>
+      <span><span id="rem-out">20</span> / <span id="rem-max-out">34</span> applicable</span>
+    </div>
+    <input type="range" min="0" max="34" step="1" value="20" id="rem" />
+  </div>
+
+  <div class="control">
+    <div class="control-header">
+      <label>N/A mandatory criteria</label>
+      <span><span id="mand-na-out">0</span> / 8</span>
+    </div>
+    <input type="range" min="0" max="7" step="1" value="0" id="mand-na" />
+  </div>
+
+  <div class="control">
+    <div class="control-header">
+      <label>N/A remaining criteria</label>
+      <span><span id="rem-na-out">0</span> / 34</span>
+    </div>
+    <input type="range" min="0" max="33" step="1" value="0" id="rem-na" />
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <p class="label">Mandatory contribution</p>
+      <p class="value" id="mand-score">40.0%</p>
+      <p class="each" id="mand-each">5.00% each</p>
+    </div>
+    <div class="stat">
+      <p class="label">Remaining contribution</p>
+      <p class="value" id="rem-score">35.3%</p>
+      <p class="each" id="rem-each">1.76% each</p>
+    </div>
+    <div class="stat accent">
+      <p class="label">Estimated score</p>
+      <p class="value" id="total-score">75.3%</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="bar-labels">
+      <span>0%</span>
+      <span>70% target</span>
+      <span>100%</span>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="bar-fill" style="width: 75.3%;"></div>
+      <div class="bar-target"></div>
+    </div>
+    <p class="status-line" id="status-line">Above the 70% target by 5.3 points.</p>
+  </div>
+
+  <div class="gate-card" id="gate-card">
+    <div>
+      <p class="gate-label">Remaining criteria floor</p>
+      <p class="gate-detail" id="gate-detail">Needs at least 21 of 34 applicable remaining criteria passed</p>
+    </div>
+    <span class="gate-badge" id="gate-badge">Met</span>
+  </div>
+</div>
+
+<script>
+  const mandNA = document.getElementById('mand-na');
+  const mand = document.getElementById('mand');
+  const remNA = document.getElementById('rem-na');
+  const rem = document.getElementById('rem');
+
+  const mandNAOut = document.getElementById('mand-na-out');
+  const mandOut = document.getElementById('mand-out');
+  const mandMaxOut = document.getElementById('mand-max-out');
+  const remNAOut = document.getElementById('rem-na-out');
+  const remOut = document.getElementById('rem-out');
+  const remMaxOut = document.getElementById('rem-max-out');
+
+  const mandScore = document.getElementById('mand-score');
+  const remScore = document.getElementById('rem-score');
+  const mandEach = document.getElementById('mand-each');
+  const remEach = document.getElementById('rem-each');
+  const totalScore = document.getElementById('total-score');
+  const barFill = document.getElementById('bar-fill');
+  const statusLine = document.getElementById('status-line');
+  const gateDetail = document.getElementById('gate-detail');
+  const gateBadge = document.getElementById('gate-badge');
+
+  function update() {
+    const mNA = parseInt(mandNA.value, 10);
+    const rNA = parseInt(remNA.value, 10);
+
+    const mandApplicable = 8 - mNA;
+    const remApplicable = 34 - rNA;
+
+    mand.max = mandApplicable;
+    rem.max = remApplicable;
+    if (parseInt(mand.value, 10) > mandApplicable) mand.value = mandApplicable;
+    if (parseInt(rem.value, 10) > remApplicable) rem.value = remApplicable;
+
+    const mVal = parseInt(mand.value, 10);
+    const rVal = parseInt(rem.value, 10);
+
+    mandNAOut.textContent = mNA;
+    remNAOut.textContent = rNA;
+    mandOut.textContent = mVal;
+    mandMaxOut.textContent = mandApplicable;
+    remOut.textContent = rVal;
+    remMaxOut.textContent = remApplicable;
+
+    const mWeightEach = mandApplicable > 0 ? 40 / mandApplicable : 0;
+    const rWeightEach = remApplicable > 0 ? 60 / remApplicable : 0;
+
+    const mContribution = mVal * mWeightEach;
+    const rContribution = rVal * rWeightEach;
+    const total = mContribution + rContribution;
+
+    mandEach.textContent = mWeightEach.toFixed(2) + '% each';
+    remEach.textContent = rWeightEach.toFixed(2) + '% each';
+    mandScore.textContent = mContribution.toFixed(1) + '%';
+    remScore.textContent = rContribution.toFixed(1) + '%';
+    totalScore.textContent = total.toFixed(1) + '%';
+
+    const clampedWidth = Math.min(total, 100);
+    barFill.style.width = clampedWidth.toFixed(1) + '%';
+    barFill.style.background = total >= 70 ? '#1d9e75' : '#d85a30';
+
+    const diff = (total - 70).toFixed(1);
+    if (total >= 70) {
+      statusLine.textContent = 'Above the 70% target by ' + Math.abs(diff) + ' points.';
+    } else {
+      statusLine.textContent = Math.abs(diff) + ' points below the 70% target.';
+    }
+
+    const remThreshold = Math.min(21, remApplicable);
+    const gateMet = rVal >= remThreshold;
+    gateDetail.textContent = 'Needs at least ' + remThreshold + ' of ' + remApplicable + ' applicable remaining criteria passed';
+    gateBadge.textContent = gateMet ? 'Met' : 'Not met';
+    gateBadge.className = 'gate-badge ' + (gateMet ? 'met' : 'not-met');
+  }
+
+  [mandNA, mand, remNA, rem].forEach(el => el.addEventListener('input', update));
+  update();
+</script>
+
+</body>
+</html>
